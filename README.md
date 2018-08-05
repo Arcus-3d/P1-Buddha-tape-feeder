@@ -5,7 +5,7 @@
 
 The [Arcus3D-P1 Buddha tape feeder](https://hackaday.io/project/159792) is open source hardware. This github repository hosts the [OpenSCAD](http://www.openscad.org) source and the rendered STL images for quick access.
 
-#If you are the 'blazing forward without instructions' type, the minimum you need to know is: Print these STL files using a 0.3mm nozzle on a relatively well tuned 3D printer. For further instructions and caveats, see the web page.
+If you are the 'blazing forward without instructions' type, the minimum you need to know is: Print these STL files using a 0.3mm nozzle on a relatively well tuned 3D printer. For further instructions and caveats, see the web page.
 
 ![oshw-logo-200-px.png](oshw-logo-200-px.png)
 
