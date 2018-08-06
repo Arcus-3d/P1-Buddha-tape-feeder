@@ -85,7 +85,7 @@ tape_edge_spacing=(tape_dia/1.75*2+wall_thickness*2)/4;
 // Uncomment each part here, save, render, then export to STL.
 
 //tape_feeder_body();
-//tape_feeder_lever();
+//tape_feeder_lever(servo_drive=0);
 
 //tape_drive();
 //rotate([90,0,0]) tape_drive_spring_pivot();
@@ -131,11 +131,11 @@ module tape_feeder_assembly(width=8,rotation=0,c_rotation=0,cross_section=0,expl
 		if (cross_section == 3) translate([-cover_h_offset,cover_v_offset,0]) rotate([0,0,-cover_angle+rotation]) cube ([200,extra,200],center=true); 
 		union() {
 			if (1) tape_feeder_body();
-			if (1) translate([0,0,base_thickness-ratchet_inset_h+clearance/2+explode]) rotate([0,0,-cover_angle-lever_throw_angle/4+rotation/drive_ratio-4.5]) tape_drive(print=0);
-			if (1) translate([-cover_h_offset,cover_v_offset,base_thickness-ratchet_inset_h+clearance/2+explode]) rotate([0,0,rotation]) tape_feeder_lever();
-			if (1) translate([0,0,base_thickness+clearance/2+explode*2]) rotate([0,0,180-cover_angle-lever_throw_angle+c_rotation/drive_ratio-15]) tape_spool_assembly(explode=explode);
-			if (1) translate([-cover_h_offset,cover_v_offset,base_thickness-ratchet_inset_h+lever_arm_thickness+wall_thickness+clearance/2+explode*2]) rotate([0,0,-lever_throw_angle-cover_angle+-6.9+c_rotation]) cover_spool_assembly(explode=explode,print=0);
-			if (1) {
+			if (0) translate([0,0,base_thickness-ratchet_inset_h+clearance/2+explode]) rotate([0,0,-cover_angle-lever_throw_angle/4+rotation/drive_ratio-4.5]) tape_drive(print=0);
+			if (0) translate([-cover_h_offset,cover_v_offset,base_thickness-ratchet_inset_h+clearance/2+explode]) rotate([0,0,rotation]) tape_feeder_lever();
+			if (0) translate([0,0,base_thickness+clearance/2+explode*2]) rotate([0,0,180-cover_angle-lever_throw_angle+c_rotation/drive_ratio-15]) tape_spool_assembly(explode=explode);
+			if (0) translate([-cover_h_offset,cover_v_offset,base_thickness-ratchet_inset_h+lever_arm_thickness+wall_thickness+clearance/2+explode*2]) rotate([0,0,-lever_throw_angle-cover_angle+-6.9+c_rotation]) cover_spool_assembly(explode=explode,print=0);
+			if (0) {
 				translate([0,0,base_thickness/2+nozzle_dia-clearance/2+explode/2]) rotate([0,0,180-(360/tape_teeth/1.95)-cover_angle-lever_throw_angle/2]) tape_pin_ratchet(print=0);
 				translate([-cover_h_offset,cover_v_offset,base_thickness-ratchet_inset_h+clearance/2+explode/2]) rotate([0,0,-lever_throw_angle-cover_angle+(360/cover_teeth*-4.25)-cover_rotation_direction*(270-lever_throw_angle-cover_angle-(360/cover_teeth*2))]) mirror([cover_rotation_direction,0,0]) cover_pin_ratchet(print=0);
 			}
@@ -337,7 +337,7 @@ module tape_drive(h=ratchet_tooth_h+ratchet_inset_h,supports=0,drive_r=tape_driv
 }
 
 // Lever arm, cover drive ratchet, connected by piano wire to tape_drive
-module tape_feeder_lever(cutout=0) {
+module tape_feeder_lever(cutout=0,servo_drive=0) {
 	h=lever_arm_thickness;
 	if (cutout) hull() {
 		translate([cover_h_offset/8,cover_dia/1.5,h]) cylinder(r=cover_dia/6,h=h*2,center=true);
@@ -345,27 +345,33 @@ module tape_feeder_lever(cutout=0) {
 	} else {
 		difference() {
 			union() {
-				// handle end
-				translate([cover_h_offset/1.5,cover_dia*1.1,(h+8)/2-extra]) cylinder(r=cover_dia/12,h=8,center=true);
-				// end to first joint
-				hull() {
-					translate([cover_h_offset/1.5,cover_dia*1.1,h/2]) cylinder(r=cover_dia/12,h=h,center=true);
-					translate([cover_h_offset/8,cover_dia/1.5,h/2]) cylinder(r=cover_dia/6,h=h,center=true);
+				if (! servo_drive) {
+					// handle end
+					translate([cover_h_offset/1.5,cover_dia*1.1,(h+8)/2-extra]) cylinder(r=cover_dia/12,h=8,center=true);
+					// end to first joint
+					hull() {
+						translate([cover_h_offset/1.5,cover_dia*1.1,h/2]) cylinder(r=cover_dia/12,h=h,center=true);
+						translate([cover_h_offset/8,cover_dia/1.5,h/2]) cylinder(r=cover_dia/6,h=h,center=true);
+					}
+					// support rib
+					hull() {
+						translate([cover_h_offset/1.5,cover_dia*1.1,8/2]) cylinder(r=h/2,h=8,center=true);
+						translate([cover_h_offset/8,cover_dia/2+cover_spool_depth+wall_thickness,h/2]) cylinder(r=h/2,h=h,center=true);
+					}
 				}
 				// first joint to center
 				hull() {
 					translate([cover_h_offset/8,cover_dia/1.5,h/2]) cylinder(r=cover_dia/6,h=h,center=true);
 					translate([0,0,h/2]) cylinder(r=cover_dia/3.35,h=h,center=true);
+				}	
+				hull() {
+					translate([cover_h_offset/4.5,cover_dia/1.3,h/2]) cylinder(r=wall_thickness*2,h=h,center=true);
+					translate([cover_h_offset/8,cover_dia/1.5,h/2]) cylinder(r=cover_dia/6,h=h,center=true);
 				}
 				//servo slot
 				translate([0,0,0]) hull() {
 					for (i=[0,lever_throw_angle]) rotate([0,0,-i]) 
 					translate([-4,cover_dia/2+cover_dia/7,h/2]) cylinder(r=cover_dia/10,h=h,center=true);
-				}
-				// support rib
-				hull() {
-					translate([cover_h_offset/1.5,cover_dia*1.1,8/2]) cylinder(r=h/2,h=8,center=true);
-					translate([cover_h_offset/8,cover_dia/2+cover_spool_depth+wall_thickness,h/2]) cylinder(r=h/2,h=h,center=true);
 				}
 				// ratchet
 				rotate([0,0,180-lever_throw_angle]) mirror([cover_rotation_direction,0,0]) rotate([0,0,-360/cover_teeth*2])
@@ -559,6 +565,17 @@ module tape_feeder_body() {
 						translate([0,-tape_edge_spacing/2,base_thickness/2]) cube([base_thickness,base_thickness,base_thickness],center=true);
 						translate([0,-tape_edge_spacing*2+12/2,12/2]) cube([base_thickness,12,12],center=true);
 					}
+					translate([0,0,base_thickness+wall_thickness/2]) intersection() {
+						hull() {
+							translate([0,0,0]) cylinder(r=tape_edge_spacing*2,h=base_thickness,center=true);
+							for (i=[-55,55]) rotate([0,0,i]) translate([0,tape_dia/2+6.5+2/2,0]) cylinder(r=6.5/2,h=base_thickness,center=true);
+						}
+						hull() {
+							translate([0,tape_drive_r,0]) scale([1.5,1,1]) cylinder(r=tape_dia/2/7,center=true,h=wall_thickness);
+							translate([0,0,0]) cylinder(r=bearing_od/2+clearance*2+nozzle_dia*8+tape_dia*2/9,center=true,h=wall_thickness);
+						}
+						translate([tape_dia/2/4.1,tape_drive_r-tape_dia/2/5.7,-wall_thickness*.75]) rotate([0,25,15]) cube([tape_dia/2/9,tape_dia/2/7,wall_thickness*1.5],center=true);
+					}
 				}
 				// servo mount cutouts
 				translate([-cover_h_offset-cover_dia/2-cover_spool_depth-6/2-1,cover_v_offset+cover_dia/2.5-7/2,12/2]) {
@@ -702,10 +719,20 @@ module tape_ratchet(h=wall_thickness+ratchet_tooth_h-clearance,teeth=tape_teeth,
 					}
 				}
 				if (spring) {
-					rotate([0,0,14]) translate([0,0,-h/2]) hull() {
-						translate([0,drive_r,ratchet_inset_h/2]) scale([1.5,1,1]) cylinder(r=r/9,center=true,h=ratchet_inset_h);
-						translate([0,0,ratchet_inset_h/2]) cylinder(r=bearing_od/2+clearance*2+nozzle_dia*8,center=true,h=ratchet_inset_h);
+					rotate([0,0,14]) translate([0,0,-h/2]) {
+						hull() {
+							translate([0,drive_r,ratchet_inset_h/2]) scale([1.5,1,1]) cylinder(r=r/9,center=true,h=ratchet_inset_h);
+							translate([0,0,ratchet_inset_h/2]) cylinder(r=bearing_od/2+clearance*2+nozzle_dia*8,center=true,h=ratchet_inset_h);
+						}
+						translate([0,0,h*.75/2]) intersection() {
+							hull() {
+								translate([0,drive_r,0]) scale([1.5,1,1]) cylinder(r=r/9,center=true,h=h*.75);
+								translate([0,0,0]) cylinder(r=bearing_od/2+clearance*2+nozzle_dia*8,center=true,h=h*.75);
+							}
+							translate([r/5,drive_r-r/5,0]) rotate([0,45,15]) cube([r/9,r/7,h+extra],center=true);
+						}
 					}
+							
 				}
 				if (cutout) {
 					rotate([0,0,14]) hull() {
